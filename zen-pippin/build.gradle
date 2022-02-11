@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.5.0'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group 'io.github.rothschil'
+version '1.0.0'
+def SpringBootVersion="2.5.0"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+
+jar {
+    // 禁用档案后缀，处理 **-plain.jar
+    archiveClassifier = ''
+}
+
+// 默认不需要打可执行jar包
+bootJar {
+    enabled = true
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding('UTF-8')
+}
+
+dependencies {
+    annotationProcessor('org.projectlombok:lombok:1.18.20')
+    testImplementation('org.projectlombok:lombok:1.18.20')
+    testAnnotationProcessor('org.projectlombok:lombok:1.18.20')
+    implementation('org.projectlombok:lombok:1.18.20')
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$SpringBootVersion") {
+    }
+
+implementation("org.springframework.boot:spring-boot-starter-web:$SpringBootVersion")	
+
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// 删除所有输出目录
+task cleanBuildDir(type: Delete) {
+    delete "${projectDir}/build"
+    delete "${projectDir}/out"
+}
+
+task javaDoc(type: Javadoc) {
+    //  delete("javadoc/")
+    options.encoding = "UTF-8"
+    options.charSet = "UTF-8"
+    //保留 public 的方法
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.linkSource = true
+    options.links("http://docs.oracle.com/javase/8/docs/api/")
+    //是否保留作者
+    options.author = true
+    options.version = true
+    options.header = project.name
+    //是否生成树状结构
+    options.noTree = true
+    options.noIndex = true
+    options.noNavBar = true
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+    //定义所有Java源代码
+    source = sourceSets.main.allJava
+    // destinationDir = file("javadoc/") //生成 javadoc 的目标目录
+    //报错不中断
+    failOnError = false
+}
+
+task javaDocJar(type: Jar, dependsOn: javaDoc) {
+    // 文件标记
+    archiveClassifier = "javadoc"
+    // 通过javaDocTask 找到目标路径
+    from javaDoc.destinationDir
+}
+
+//自定义打包任务，继承Jar，并且依赖classes，最终编译才打包 dependsOn: [classes]
+task sourceTask(type: Jar, dependsOn: [classes]) {
+    //所有源码读取类型
+    from sourceSets.main.allSource
+    //定义文件后缀类型
+    classifier('sources')
+}

@@ -1,0 +1,29 @@
+#as super schema
+#三大根类型（root type: query mutation subscription）定义的时候本身或者继承其的子类必须有方法，否则就会报错
+schema {
+    query: Query
+    mutation: Mutation
+    #    subscription: Subscription
+
+}
+
+#三大根类型
+type Query @auth{}
+
+type Mutation {}
+
+#type Subscription {}
+
+#统一返回结果
+#type ResultObj {
+#    code: Int
+#    message: String
+#    data:
+#}
+
+#认证授权指令  面临的问题 如何在Java里面对指令directive进行实现
+directive @auth(
+    ignore: Boolean = false
+    roles: [String] = []
+    permissions: [String] = []
+) on OBJECT | FIELD_DEFINITION |FIELD
